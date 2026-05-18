@@ -1,0 +1,379 @@
+# AI Supply Chain Risk Monitor
+
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111%2B-009688?logo=fastapi)
+![Claude](https://img.shields.io/badge/Claude-claude--opus--4--5-blueviolet?logo=anthropic)
+![Kafka](https://img.shields.io/badge/Apache_Kafka-7.6-231F20?logo=apachekafka)
+![Neo4j](https://img.shields.io/badge/Neo4j-5.20-008CC1?logo=neo4j)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+
+Monitors news, sanctions lists, weather, and geopolitical events to predict supply chain disruptions and recommend alternative suppliers with impact assessments.
+
+---
+
+## Project Status
+
+| Component | Status |
+|---|---|
+| FastAPI Backend | ✅ Complete |
+| Claude Risk Agent | ✅ Complete |
+| Kafka Producer | ✅ Complete |
+| Kafka Consumer | ✅ Complete |
+| Neo4j Graph Client | ✅ Complete |
+| News Collector (Tavily) | ✅ Complete |
+| Sanctions Collector (OFAC/UN/EU) | ✅ Complete |
+| Weather Collector (OpenWeatherMap) | ✅ Complete |
+| Geopolitical Collector (Tavily) | ✅ Complete |
+| React Dashboard | ✅ Complete |
+| Supply Chain Graph View | ✅ Complete |
+| Risk Analysis UI | ✅ Complete |
+| Real-time Alert Feed (WebSocket) | ✅ Complete |
+| Docker Compose (full stack) | ✅ Complete |
+| Unit Tests | 🔲 Not yet implemented |
+| Authentication | 🔲 Not yet implemented |
+
+---
+
+## Tech Stack
+
+| Tool | Purpose |
+|---|---|
+| **Claude (Anthropic)** | AI risk synthesis, scoring, disruption prediction, alternative supplier recommendations |
+| **Apache Kafka** | Event streaming — publishes risk events and alerts to downstream consumers |
+| **Neo4j** | Graph database — stores multi-tier supplier relationships and enables graph traversal |
+| **Tavily AI Search** | Real-time news, geopolitical events, patent and legal intelligence |
+| **OpenWeatherMap API** | Weather alerts near critical logistics nodes (ports, canals, straits) |
+| **FastAPI** | REST API + WebSocket server |
+| **React + Vite** | Frontend dashboard |
+
+---
+
+## Project Structure
+
+```
+ai-supply-chain-risk-monitor/
+├── backend/
+│   ├── main.py                         # FastAPI app and all API endpoints
+│   ├── agent.py                        # Claude risk analysis orchestrator
+│   ├── neo4j_client.py                 # Neo4j supplier graph client
+│   ├── kafka_producer.py               # Kafka risk event producer
+│   ├── kafka_consumer.py               # Kafka consumer (background worker)
+│   ├── data_collectors/
+│   │   ├── __init__.py
+│   │   ├── news_collector.py           # Tavily news intelligence
+│   │   ├── sanctions_collector.py      # OFAC / UN / EU sanctions lists
+│   │   ├── weather_collector.py        # OpenWeatherMap logistics alerts
+│   │   └── geo_collector.py            # Geopolitical events and trade restrictions
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                     # Main app with navigation
+│   │   ├── App.css                     # Dark industrial theme
+│   │   ├── main.jsx                    # React entry point
+│   │   └── components/
+│   │       ├── Dashboard.jsx           # Global risk dashboard
+│   │       ├── SupplierGraph.jsx       # Neo4j graph visualization + supplier CRUD
+│   │       ├── RiskAnalysis.jsx        # On-demand risk analysis UI
+│   │       └── AlertFeed.jsx           # Real-time WebSocket alert feed
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── docker-compose.yml                  # Full stack: Neo4j + Kafka + Backend + Frontend
+├── .env.example
+└── README.md
+```
+
+---
+
+## Prerequisites
+
+- Python 3.11 or higher
+- Node.js 18 or higher
+- Docker and Docker Compose (for full stack)
+- API keys: Anthropic (required), Tavily (optional), OpenWeatherMap (optional)
+
+---
+
+## Quick Start (Docker — Recommended)
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/summykumari567/ai-supply-chain-risk-monitor.git
+cd ai-supply-chain-risk-monitor
+```
+
+**2. Set up environment variables**
+```bash
+cp .env.example .env
+# Edit .env — add your API keys
+```
+
+**3. Start the full stack**
+```bash
+docker-compose up --build
+```
+
+All services will start:
+
+| Service | URL |
+|---|---|
+| React Frontend | http://localhost:3000 |
+| FastAPI Backend | http://localhost:8000 |
+| API Docs (Swagger) | http://localhost:8000/docs |
+| Neo4j Browser | http://localhost:7474 |
+| Kafka UI | http://localhost:8080 |
+
+---
+
+## Manual Setup (without Docker)
+
+### Backend
+
+**1. Create and activate virtual environment**
+```bash
+cd backend
+python -m venv .venv
+
+# macOS / Linux
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
+```
+
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**3. Set environment variables**
+```bash
+cp ../.env.example ../.env
+# Edit .env with your keys
+```
+
+**4. Start Neo4j and Kafka** (or skip — both fail gracefully in mock mode)
+```bash
+# Neo4j (Docker)
+docker run -d -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/password neo4j:5.20
+
+# Kafka (Docker)
+docker-compose up neo4j kafka zookeeper -d
+```
+
+**5. Run the API server**
+```bash
+uvicorn main:app --reload
+```
+
+**6. Run the Kafka consumer (optional, separate terminal)**
+```bash
+python kafka_consumer.py
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend available at: http://localhost:3000
+
+---
+
+## API Endpoints
+
+### `GET /health`
+```bash
+curl http://localhost:8000/health
+```
+Response: `{ "status": "ok" }`
+
+---
+
+### `POST /analyze` — Run full risk analysis
+```json
+{
+  "supplier_name": "TSMC",
+  "country": "Taiwan",
+  "category": "semiconductors",
+  "include_alternatives": true
+}
+```
+
+Response:
+```json
+{
+  "overall_risk_score": 74,
+  "risk_level": "HIGH",
+  "confidence": 0.85,
+  "disruption_probability_30d": 0.32,
+  "disruption_probability_90d": 0.61,
+  "executive_summary": "...",
+  "risk_factors": [
+    {
+      "category": "geopolitical",
+      "title": "Taiwan Strait Tension",
+      "severity": "HIGH",
+      "affected_regions": ["Taiwan", "East Asia"],
+      "estimated_impact_days": 90,
+      "probability": 0.45
+    }
+  ],
+  "alternative_suppliers": [
+    {
+      "name": "Samsung Foundry",
+      "country": "South Korea",
+      "risk_score": 42,
+      "capacity_match": "PARTIAL",
+      "lead_time_days": 45,
+      "rationale": "..."
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "IMMEDIATE",
+      "action": "Increase safety stock by 60 days",
+      "expected_outcome": "Buffer against 30-day disruption",
+      "estimated_cost_usd": 2500000
+    }
+  ]
+}
+```
+
+---
+
+### `POST /suppliers` — Register a supplier
+```json
+{
+  "name": "TSMC",
+  "country": "Taiwan",
+  "category": "semiconductors",
+  "tier": 1,
+  "annual_spend_usd": 50000000
+}
+```
+
+### `GET /suppliers` — List all suppliers
+
+### `GET /suppliers/{name}/risk` — Risk assessment for one supplier
+
+### `GET /dashboard` — Aggregated global risk dashboard
+
+### `GET /sanctions` — Latest sanctions updates
+
+### `GET /weather-risks` — Weather events near logistics nodes
+
+### `GET /geopolitical` — Active geopolitical events
+
+### `GET /graph` — Supply chain graph data (nodes + edges)
+
+### `POST /alerts` — Manually create a disruption alert
+
+### `WS /ws/alerts` — WebSocket stream for real-time alerts
+
+---
+
+## How It Works
+
+### Agent Pipeline
+
+```
+POST /analyze
+     |
+     | (all run in parallel)
+     |
+     +-- NewsCollector        Tavily: supplier news, disruptions, sentiment
+     +-- SanctionsCollector   OFAC / UN / EU sanctions lists + Tavily updates
+     +-- WeatherCollector     OpenWeatherMap alerts at 8 critical logistics nodes
+     +-- GeoCollector         Tavily: trade wars, export bans, political instability
+     |
+     v
+[Claude claude-opus-4-5]
+  Synthesizes all 4 intelligence streams
+  Scores overall risk 0-100
+  Classifies risk level: LOW / MEDIUM / HIGH / CRITICAL
+  Calculates 30-day and 90-day disruption probabilities
+  Ranks risk factors by severity and probability
+  Recommends alternative suppliers with impact assessments
+  Generates prioritized action recommendations
+     |
+     v
+Risk result → Kafka topic: supply-chain-risk-events
+           → Kafka topic: supplier-risk-scores
+           → WebSocket broadcast to React frontend
+           → API response
+```
+
+### Kafka Topics
+
+| Topic | Description |
+|---|---|
+| `supply-chain-risk-events` | Full risk assessments and disruption alerts |
+| `supply-chain-alerts` | High/critical severity alerts only |
+| `supplier-risk-scores` | Lightweight per-supplier score updates |
+
+### Neo4j Graph Schema
+
+| Node | Properties |
+|---|---|
+| `Supplier` | name, country, category, tier, annual_spend_usd |
+| `Country` | name |
+
+| Relationship | Meaning |
+|---|---|
+| `SUPPLIES` | Supplier provides goods/services to another |
+| `LOCATED_IN` | Supplier is based in a Country |
+| `ALTERNATIVE_FOR` | Supplier can substitute for another |
+
+### Monitored Logistics Nodes
+
+The weather collector monitors these critical global logistics nodes:
+Port of Shanghai · Port of Rotterdam · Port of Singapore · Port of Los Angeles · Suez Canal · Panama Canal · Strait of Malacca · Taiwan Strait
+
+---
+
+## Environment Variables
+
+| Variable | Required | Where to get it |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Yes | https://console.anthropic.com |
+| `TAVILY_API_KEY` | No (optional) | https://tavily.com |
+| `OPENWEATHER_API_KEY` | No (optional) | https://openweathermap.org/api |
+| `NEO4J_URI` | No (default: bolt://localhost:7687) | Auto-configured with Docker |
+| `NEO4J_USER` | No (default: neo4j) | Auto-configured with Docker |
+| `NEO4J_PASSWORD` | No (default: password) | Auto-configured with Docker |
+| `KAFKA_BOOTSTRAP_SERVERS` | No (default: localhost:9092) | Auto-configured with Docker |
+| `KAFKA_CONSUMER_GROUP` | No (default: supply-chain-risk-monitor-group) | Auto-configured with Docker |
+
+All services fail gracefully in mock mode when keys are not provided — the analysis will still run using available data.
+
+---
+
+## Dependencies
+
+### Backend
+```
+anthropic>=0.30.0       Claude AI SDK
+fastapi>=0.111.0        REST API framework
+uvicorn[standard]       ASGI server
+httpx>=0.27.0           Async HTTP client
+pydantic>=2.7.0         Request/response validation
+python-dotenv>=1.0.0    .env file loading
+neo4j>=5.20.0           Neo4j Python driver
+confluent-kafka>=2.4.0  Kafka producer/consumer
+websockets>=12.0        WebSocket support
+```
+
+### Frontend
+```
+react@18                UI framework
+vite@5                  Build tool and dev server
+```
+
+---
+
